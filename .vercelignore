@@ -1,0 +1,7 @@
+!.vercel
+!venv
+!tfdif.py
+!wording.py
+!.gitignore
+!templates/index.html
+!main.py
