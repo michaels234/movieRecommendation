@@ -5,13 +5,6 @@ from main import data, give_recomendations
 
 app = Flask(__name__)
 
-#saved = pickle.load(open('saved_model', 'rb'))
-#similarity_distance, movies_cleaned = data(saved)
-#while 1:
-#	inp = input('Input Movie: ')
-#	give_recomendations(inp, similarity_distance, movies_cleaned)
-
-
 @app.route('/')
 def home():
 	context = {'prediction_text': 'Not Yet'}
