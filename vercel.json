@@ -2,7 +2,7 @@
     "version": 2,
     "builds": [{
         "src": "*.py",
-        "use": "@michaels234/movie-recommendation"
+        "use": "@vercel/python"
     }],
     "routes": [{
         "src": "(.*)",
