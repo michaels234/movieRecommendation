@@ -1,0 +1,11 @@
+{
+    "version": 2,
+    "builds": [{
+        "src": "*.py",
+        "use": "@michaels234/movie-recommendation"
+    }],
+    "routes": [{
+        "src": "(.*)",
+        "dest": "app.py"
+    }]
+}
