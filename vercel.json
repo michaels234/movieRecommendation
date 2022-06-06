@@ -5,7 +5,7 @@
         "use": "@vercel/python"
     }],
     "routes": [{
-        "src": "./templates",
+        "src": "./templates/index.html",
         "dest": "/"
     }]
 }
