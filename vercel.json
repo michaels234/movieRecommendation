@@ -1,11 +1,18 @@
 {
-    "version": 2,
-    "builds": [{
-        "src": "./app.py",
-        "use": "@vercel/python"
-    }],
-    "routes": [{
-        "src": "./templates/index.html",
-        "dest": "/"
-    }]
+    "functions": {
+        "api/**/*.py": {
+            "excludeFiles": [
+                "templates/index.html",
+                ".git",
+                ".vercel",
+                ".gitignore",
+                "app.py",
+                "main.py",
+                "requirements.txt",
+                "tfdf.py",
+                "wording.py",
+                "api/main.py"
+            ]
+        }
+    }
 }
