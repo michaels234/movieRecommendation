@@ -1,7 +1,7 @@
 from flask import Flask, request, render_template
-import pickle
+#import pickle
 import os
-from main import data, give_recomendations
+#from main import data, give_recomendations
 
 app = Flask(__name__)
 
@@ -9,18 +9,21 @@ app = Flask(__name__)
 def home():
 	context = {'prediction_text': 'Not Yet'}
 	#return render_template('index.html', context=context)
-	return "<h2>a thing here</h2>"
+	return """
+	<h2>a thing here</h2>
+	<div>there too</div>
+	"""
 
 
-@app.route('/predict', methods=['POST'])
-def predict():
-	"""Grabs the input values and uses them to make prediction"""
-	movie = request.form["movie"]
-	saved = pickle.load(open('saved_model', 'rb'))
-	similarity_distance, movies_cleaned = data(saved)
-	output = give_recomendations(movie, similarity_distance, movies_cleaned)
-	context = {'prediction_text': output}
-	return render_template('index.html', context=context)
+#@app.route('/predict', methods=['POST'])
+#def predict():
+#	"""Grabs the input values and uses them to make prediction"""
+#	movie = request.form["movie"]
+#	saved = pickle.load(open('saved_model', 'rb'))
+#	similarity_distance, movies_cleaned = data(saved)
+#	output = give_recomendations(movie, similarity_distance, movies_cleaned)
+#	context = {'prediction_text': output}
+#	return render_template('index.html', context=context)
 
 
 if __name__ == "__main__":
