@@ -8,7 +8,8 @@ app = Flask(__name__)
 @app.route('/')
 def home():
 	context = {'prediction_text': 'Not Yet'}
-	return render_template('index.html', context=context)
+	#return render_template('index.html', context=context)
+	return "<h2>a thing here</h2>"
 
 
 @app.route('/predict', methods=['POST'])
