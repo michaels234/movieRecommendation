@@ -1,5 +1,5 @@
 venv
-saved_model
+similarity_distance.pickle
 .vercel
 tmdb_5000_credits.csv
 tmdb_5000_movies.csv
