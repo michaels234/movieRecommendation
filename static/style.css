@@ -17,6 +17,7 @@ body {
     align-items: flex-start;
     justify-content: flex-start;
     overflow-y: hidden;
+    background-color: #282828;
 }
 
 .outer-div {
@@ -27,11 +28,12 @@ body {
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
+    overflow-y: hidden;
 }
 
 .input {
     width: 100%;
-    border: 1px solid black;
+    border: 1px solid white;
     outline: none;
     height: 70px;
     font-size: 60px;
@@ -43,6 +45,12 @@ body {
     padding-top: 0;
     margin-bottom: 0;
     margin-top: 0;
+    background-color: grey;
+    color: black;
+}
+
+::placeholder {
+    color: black;
 }
 
 .options {
@@ -55,6 +63,17 @@ body {
     overflow-y: scroll;
     display: flex;
     flex-direction: column;
+}
+
+::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 20px;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: white;
+    box-shadow: 0 0 1px black;
 }
 
 .results {
@@ -72,6 +91,10 @@ button {
     padding-top: 0;
     margin-bottom: 0;
     margin-top: 0;
+    background-color: darkgrey;
+    color: black;
+    border-color: black;
+    cursor: pointer;
 }
 
 .loading1 {
@@ -87,4 +110,5 @@ button {
 .loading2 {
     width: fit-content;
     height: fit-content;
+    color: white;
 }
