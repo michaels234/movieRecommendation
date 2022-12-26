@@ -81,6 +81,34 @@ body {
     white-space: pre-wrap;
     overflow-y: scroll;
     height: calc(100% - 70px);
+    width: 100%
+}
+
+.result {
+    color: black;
+    background: grey;
+    border-radius: 30px;
+    border: 3px solid navy;
+    margin-top: 10px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.line1 {
+    font-size: 28px;
+    color: navy;
+    font-weight: bold;
+}
+
+.line2 {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.line3 {
+    font-size: 16px;
 }
 
 button {
@@ -92,9 +120,10 @@ button {
     margin-bottom: 0;
     margin-top: 0;
     background-color: darkgrey;
-    color: black;
-    border-color: black;
+    color: Navy;
+    border: 3px solid navy;
     cursor: pointer;
+    margin-top: 10px;
 }
 
 .loading1 {

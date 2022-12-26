@@ -102,7 +102,7 @@ def process(text):
 
 def give_recomendations(movie, similarity_distance, movies):
 	index = movies[movies['original_title'] == movie].index[0]
-	output = '\nSOURCE MOVIE:' + '\nTITLE: ' + movies["original_title"].iloc[index] + '\nDESCRIPTION: ' + movies["overview"].iloc[index] + '\n\nRECOMMENDATIONS:'
+	output = 'SOURCE MOVIE:' + '\nTITLE: ' + movies["original_title"].iloc[index] + '\nDESCRIPTION: ' + movies["overview"].iloc[index] + '\n\nRECOMMENDATIONS:'
 	for i in range(1, 11):
 		ind = np.argsort(similarity_distance[index])[i]
 		output += '\n\n#' + str(i) + '\nTITLE: ' + movies["original_title"].iloc[ind] + '\nDESCRIPTION: ' + movies["overview"].iloc[ind]

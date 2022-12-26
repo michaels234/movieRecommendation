@@ -19,6 +19,10 @@
 			this.changeMovieInput = this.changeMovieInput.bind(this)
 			this.movieSelection = this.movieSelection.bind(this)
             this.loading = true
+			this.movies = null
+			this.options = null
+			this.movieInput = ''
+			this.recommendations = 'Enter a movie title\nand get 10 recommended similar movies'
 		}
 
 		async componentDidMount () {
@@ -72,11 +76,11 @@
 							type="text" 
 							value={this.movieInput}
 							onChange={this.changeMovieInput}
-							placeholder="ENTER A MOVIE"
+							placeholder="MOVIE TITLE"
 							onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }}
 						/>
 						<div className="options">
-							{this.options.map((value, index) => <button onClick={() => this.movieSelection(value)}>{value}</button>)}
+							{this.options.map((value, index) => <button onClick={() => this.movieSelection(value)} key={value + index}>{value}</button>)}
 						</div>
 					</div>
 				)
@@ -90,7 +94,23 @@
 							placeholder="ENTER A MOVIE"
 							autoFocus
 						/>
-						<div className="results">{this.recommendations}</div>
+						<div className="results">
+							{
+								this.recommendations.split('\n\n').map((value, index) =>
+									<div className="result" key={value + index}>
+										<div className = "line1">
+											{value.split('\n')[0]}
+										</div>
+										<div className = "line2">
+											{value.split('\n')[1]}
+										</div>
+										<div className = "line3">
+											{value.split('\n')[2]}
+										</div>
+									</div>
+								)
+							}
+						</div>
 					</div>
 				)
 			} else {
