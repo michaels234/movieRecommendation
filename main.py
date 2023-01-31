@@ -35,12 +35,9 @@ stemmer3 = LancasterStemmer()
 def get_movies():
 	print('GET MOVIES')
 	pd.options.display.max_colwidth = 220
-	credits = pd.read_csv("tmdb_5000_credits.csv")
 	movies = pd.read_csv("tmdb_5000_movies.csv")
 	nltk.download("stopwords")
-	credits_column_renamed = credits.rename(index=str, columns={"movie_id": "id"})
-	movies = movies.merge(credits_column_renamed, on='id')
-	movies = movies.drop(columns=['homepage', 'title_x', 'title_y', 'status','production_countries'])
+	movies = movies.drop(columns=['homepage', 'status','production_countries'])
 	movies.dropna(subset=['overview', 'original_title'], inplace=True)
 	movies.reset_index(drop=True, inplace=True)
 	movies.drop_duplicates(subset=['original_title'], inplace=True)
