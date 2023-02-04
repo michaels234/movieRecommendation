@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, jsonify
+from movies import movies_raw
 import numpy as np
 import pandas as pd
 
@@ -31,7 +32,7 @@ def predict():
 def get_movies():
 	print('GET MOVIES')
 	pd.options.display.max_colwidth = 220
-	movies = pd.read_csv("tmdb_5000_movies.csv")
+	movies = movies_raw
 	movies = movies.drop(columns=['homepage', 'status','production_countries'])
 	movies.dropna(subset=['overview', 'original_title'], inplace=True)
 	movies.reset_index(drop=True, inplace=True)
