@@ -1,7 +1,6 @@
-import pandas as pd
 import numpy as np
-import nltk
 import time
+import nltk
 from nltk.corpus import stopwords
 import string
 from nltk.stem.snowball import SnowballStemmer
@@ -14,7 +13,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 #import tfidf as tfidf
 import json
-import pickle
+from app import get_movies, give_recomendations
 
 # the main issues with all this:
 # i added the genres as words in the overviews. should i instead actually filter out by genre?
@@ -30,22 +29,10 @@ print('START')
 stemmer = SnowballStemmer("english")
 stemmer2 = PorterStemmer()
 stemmer3 = LancasterStemmer()
+nltk.download("stopwords")
 
 
-def get_movies():
-	print('GET MOVIES')
-	pd.options.display.max_colwidth = 220
-	movies = pd.read_csv("tmdb_5000_movies.csv")
-	nltk.download("stopwords")
-	movies = movies.drop(columns=['homepage', 'status','production_countries'])
-	movies.dropna(subset=['overview', 'original_title'], inplace=True)
-	movies.reset_index(drop=True, inplace=True)
-	movies.drop_duplicates(subset=['original_title'], inplace=True)
-	movies.reset_index(drop=True, inplace=True)
-	return movies
-
-
-def clean_movie_data(movies, genr_atio=.3, key_ratio=.3):
+def clean_movie_data(movies, genre_ratio=.3, key_ratio=.3):
 	global stemmer, stemmer2, stemmer3
 	print('CLEAN MOVIE DATA')
 	movies_cleaned = movies.copy(deep=True)
@@ -55,8 +42,8 @@ def clean_movie_data(movies, genr_atio=.3, key_ratio=.3):
 		genres = json.loads(movies_cleaned[movies_cleaned['original_title'] == movie_title]['genres'].values[0])
 		keywords = json.loads(movies_cleaned[movies_cleaned['original_title'] == movie_title]['keywords'].values[0])
 		#print('keywords', keywords)
-		# genr_atio = multiple1 * len(genres) / len(movies_cleaned.at[index, 'overview'].split()
-		multiple1 = round(genr_atio * len(movies_cleaned.at[index, 'overview'].split()) / len(genres)) if len(genres) != 0 else 1
+		# genre_ratio = multiple1 * len(genres) / len(movies_cleaned.at[index, 'overview'].split()
+		multiple1 = round(genre_ratio * len(movies_cleaned.at[index, 'overview'].split()) / len(genres)) if len(genres) != 0 else 1
 		multiple1 = multiple1 if multiple1 != 0 else 1
 		multiple2 = round(key_ratio * len(movies_cleaned.at[index, 'overview'].split()) / len(keywords)) if len(keywords) != 0 else 1
 		multiple2 = multiple2 if multiple2 != 0 else 1
@@ -76,7 +63,7 @@ def fit_model(movies_cleaned, binary=True, use_idf=True, min_df=2, max_df=.9, sa
 	tfv_matrix = tfv.fit_transform(movies_cleaned['overview'])
 	similarity_distance = 1 - cosine_similarity(tfv_matrix)
 	if save:
-		pickle.dump(similarity_distance, open('similarity_distance.pickle', 'wb'))
+		np.save('similarity_distance.npy', similarity_distance)
 		print('SAVED')
 	return similarity_distance
 
@@ -97,21 +84,12 @@ def process(text):
 	return ' '.join(final)
 
 
-def give_recomendations(movie, similarity_distance, movies):
-	index = movies[movies['original_title'] == movie].index[0]
-	output = 'SOURCE MOVIE:' + '\nTITLE: ' + movies["original_title"].iloc[index] + '\nDESCRIPTION: ' + movies["overview"].iloc[index] + '\n\nRECOMMENDATIONS:'
-	for i in range(1, 11):
-		ind = np.argsort(similarity_distance[index])[i]
-		output += '\n\n#' + str(i) + '\nTITLE: ' + movies["original_title"].iloc[ind] + '\nDESCRIPTION: ' + movies["overview"].iloc[ind]
-	return output
-
-
 if __name__ == "__main__":
 	movies = get_movies()
 	
 	# uncomment below to fit a particular hyperparameter setting
-	binary, use_idf, min_df, max_df, genr_atio, key_ratio = False, False, 7, 0.7, 0.2, 0.1
-	movies_cleaned = clean_movie_data(movies, genr_atio=genr_atio, key_ratio=key_ratio)
+	binary, use_idf, min_df, max_df, genre_ratio, key_ratio = False, False, 7, 0.7, 0.2, 0.1
+	movies_cleaned = clean_movie_data(movies, genre_ratio=genre_ratio, key_ratio=key_ratio)
 	print('FIT MODEL')
 	similarity_distance = fit_model(movies_cleaned, binary=binary, use_idf=use_idf, min_df=min_df, max_df=max_df, save=True)
 	devil_wears_prada_recs = give_recomendations('The Devil Wears Prada', similarity_distance, movies)
@@ -130,19 +108,19 @@ if __name__ == "__main__":
 	oceans_eleven_TF = [el in oceans_eleven_recs for el in oceans_eleven_goals]
 	all_TF = oceans_eleven_TF + devil_wears_prada_TF + godfather_TF + mad_max_TF
 	maxim = sum(all_TF)
-	best = [binary, use_idf, min_df, max_df, genr_atio, key_ratio]
+	best = [binary, use_idf, min_df, max_df, genre_ratio, key_ratio]
 	print(f'Maximum: {maxim} {maxim/num_goals*100}%, Params: {best}, sum TF: [{sum(devil_wears_prada_TF)}, {sum(mad_max_TF)}, {sum(godfather_TF)}, {sum(oceans_eleven_TF)}]')
 
-	## uncomment below to do hyperparameter tuning
+	# uncomment below to do hyperparameter tuning
 	#f = open("written.txt", "w", encoding="utf-8")
 	#maxim = 8
 	#best = []
-	#for genr_atio in [.15, .175, .2, .225, .25, .275, .3]:
-	##for genr_atio in [.1, .2, .3, .4, .5, .6, .7, .8, .9, 1, 2]:
+	#for genre_ratio in [.15, .175, .2, .225, .25, .275, .3]:
+	##for genre_ratio in [.1, .2, .3, .4, .5, .6, .7, .8, .9, 1, 2]:
 	#	for key_ratio in [.05, .075, .1, .125, .15, .175, .2]:
 	#	#for key_ratio in [.1, .2, .3, .4, .5, .6, .7, .8, .9, 1, 2]:
-	#		print(genr_atio, key_ratio)
-	#		movies_cleaned = clean_movie_data(movies, genr_atio=genr_atio, key_ratio=key_ratio)
+	#		print(genre_ratio, key_ratio)
+	#		movies_cleaned = clean_movie_data(movies, genre_ratio=genre_ratio, key_ratio=key_ratio)
 	#		print('FIT MODELS')
 	#		#for binary in [True, False]:
 	#		for binary in [False]:
@@ -178,7 +156,7 @@ if __name__ == "__main__":
 	#							if (sum(devil_wears_prada_TF)>=2 and sum(mad_max_TF)>=2 and sum(godfather_TF)>=2 and sum(oceans_eleven_TF)>=2):
 	#								if sum(all_TF) >= maxim:
 	#									maxim = sum(all_TF)
-	#									best = [binary, use_idf, min_df, max_df, genr_atio, key_ratio]
+	#									best = [binary, use_idf, min_df, max_df, genre_ratio, key_ratio]
 	#									print(f'NEW BEST! Maximum: {maxim} {maxim/num_goals*100}%, Params: {best}, sum TF: [{sum(devil_wears_prada_TF)}, {sum(mad_max_TF)}, {sum(godfather_TF)}, {sum(oceans_eleven_TF)}]')
 	#									f.write(f'\n\nNEW BEST! Maximum: {maxim} {maxim/num_goals*100}%, Params: [{best}], sum TF: [{sum(devil_wears_prada_TF)}, {sum(mad_max_TF)}, {sum(godfather_TF)}, {sum(oceans_eleven_TF)}]')
 	#									f.write(devil_wears_prada_recs)
