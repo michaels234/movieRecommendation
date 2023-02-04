@@ -6,12 +6,8 @@ import string
 from nltk.stem.snowball import SnowballStemmer
 from nltk.stem.porter import PorterStemmer
 from nltk.stem import LancasterStemmer
-#from sklearn.pipeline import Pipeline
-#from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-#from sklearn.preprocessing import FunctionTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
-#import tfidf as tfidf
 import json
 from app import get_movies, give_recomendations
 
