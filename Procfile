@@ -1,0 +1,1 @@
+web: gunicorn movieRecommendation:app --log-file=-
