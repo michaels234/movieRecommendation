@@ -1,53 +1,35 @@
 from flask import Flask, request, render_template, jsonify
-from movies import movies_raw
-import numpy as np
-import pandas as pd
+from database import DataBase
 
 app = Flask(__name__)
+db = DataBase()
+
 
 @app.route('/')
 def home():
-	context = {'prediction_text': 'Not Yet'}
-	return render_template('index.html', context=context)
+	return render_template('index.html', context={'prediction_text': 'Not Yet'})
 
 
 @app.route('/movies', methods=['GET'])
 def movies():
-	movies = get_movies()
-	data = {'movies': movies['original_title'].to_numpy().tolist()}
-	return jsonify(data)
+	title_query = request.args.get('title').replace('"', '')  # get title_query without "
+	# return list of title + year options that contain title_query from db
+	options = db.list_titles_from_query(title_query)
+	return jsonify(options)
 
 
-@app.route('/predict', methods=['POST'])
+@app.route('/predict', methods=['GET'])
 def predict():
-	movies = get_movies()
-	request_data = request.get_json()
-	movie = request_data['movie']
-	similarity_distance = np.load('similarity_distance.npy')
-	output = give_recomendations(movie, similarity_distance, movies)
-	data = {'prediction_text': output}
-	return jsonify(data)
+	ind = request.args.get('ind')
+	movie_list = db.list_similar_movies_from_ind(ind)
+	return jsonify(list_to_output(movie_list))
 
 
-def get_movies():
-	print('GET MOVIES')
-	pd.options.display.max_colwidth = 220
-	movies = movies_raw
-	movies = movies.drop(columns=['homepage', 'status','production_countries'])
-	movies.dropna(subset=['overview', 'original_title'], inplace=True)
-	movies.reset_index(drop=True, inplace=True)
-	movies.drop_duplicates(subset=['original_title'], inplace=True)
-	movies.reset_index(drop=True, inplace=True)
-	return movies
-
-
-def give_recomendations(movie, similarity_distance, movies):
-	index = movies[movies['original_title'] == movie].index[0]
-	output = 'SOURCE MOVIE:' + '\nTITLE: ' + movies["original_title"].iloc[index] + '\nDESCRIPTION: ' + movies["overview"].iloc[index] + '\n\nRECOMMENDATIONS:'
+def list_to_output(movie_list):
+	output = 'SOURCE MOVIE:' + '\nTITLE: ' + movie_list[0]['title'] + '\nDESCRIPTION: ' + movie_list[0]['overview'] + '\n\nRECOMMENDATIONS:'
 	for i in range(1, 11):
-		ind = np.argsort(similarity_distance[index])[i]
-		output += '\n\n#' + str(i) + '\nTITLE: ' + movies["original_title"].iloc[ind] + '\nDESCRIPTION: ' + movies["overview"].iloc[ind]
-	return output
+		output += '\n\n#' + str(i) + '\nTITLE: ' + movie_list[i]['title'] + '\nDESCRIPTION: ' + movie_list[i]['overview']
+	return {'prediction_text': output}
 
 
 if __name__ == "__main__":

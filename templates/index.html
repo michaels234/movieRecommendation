@@ -16,52 +16,39 @@
 		constructor (props) {
 			super(props)
 			window.scrollTo(0, 0)
-			this.changeMovieInput = this.changeMovieInput.bind(this)
+			this.searchMovies = this.searchMovies.bind(this)
 			this.movieSelection = this.movieSelection.bind(this)
             this.loading = true
-			this.movies = null
-			this.options = null
+			this.options = []
 			this.movieInput = ''
 			this.recommendations = 'Enter a movie title\nand get 10 recommended similar movies'
 		}
 
-		async componentDidMount () {
-			let results = await axios.get('/movies')
-			this.movies = results.data['movies']
-			this.options = []
+		componentDidMount () {
             this.loading = false
 			this.forceUpdate()
 		}
 
-		changeMovieInput (event) {
-			this.movieInput = event.target.value
-			this.options = this.movies.filter((title) => {
-				if (title.toLowerCase().includes(this.movieInput.toLowerCase()) || title.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-\'\"_`~()]/g,"").includes(this.movieInput.toLowerCase())) {
-					return true
-				} else {
-					return false
-				}
-			})
+		async searchMovies (event) {
+			this.movieInput = event.target.value // get the input value
+			if (this.movieInput.trim()) { // remove trailing whitespaces, only do if not empty
+				// clean up and encode movieInput before API request
+				let movieInput = encodeURIComponent(`"${this.movieInput.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-\'\"_`~()]/g,'')}"`)
+				let response = await axios.get(`/movies?title=${movieInput}`) // get all titles containing movieInput query
+				this.options = response.data // set options to display
+			} else { // if empty after removing trailing whitespaces
+				this.movieInput = '' // make sure the input value is set to be empty
+				this.options = [] // and options are empty
+			}
 			this.forceUpdate()
 		}
 
-		async movieSelection (value) {
+		async movieSelection (ind) {
 			event.preventDefault();
             this.loading = true
 			this.forceUpdate()
-			let results = await axios.post(
-				'/predict',
-				{
-					'movie': value
-				},
-				{
-					headers: {
-						'Content-Type': 'application/json',
-						'Access-Control-Allow-Origin': '*'
-					}
-				}
-			)
-			this.recommendations = results.data['prediction_text']
+			let response = await axios.get(`/predict?ind=${ind}`)
+			this.recommendations = response.data['prediction_text']
 			this.movieInput = ''
 			this.options = []
             this.loading = false
@@ -75,12 +62,12 @@
 						<input className="input" align="middle" id="inp"
 							type="text" 
 							value={this.movieInput}
-							onChange={this.changeMovieInput}
+							onChange={this.searchMovies}
 							placeholder="TYPE TITLE HERE"
 							onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }}
 						/>
 						<div className="options">
-							{this.options.map((value, index) => <button onClick={() => this.movieSelection(value)} key={value + index}>{value}</button>)}
+							{this.options.map((dict) => <button onClick={() => this.movieSelection(dict['ind'])} key={dict['ind']}>{dict['titleYear']}</button>)}
 						</div>
 					</div>
 				)
@@ -90,7 +77,7 @@
 						<input className="input" align="middle" id="inp"
 							type="text" 
 							value={this.movieInput}
-							onChange={this.changeMovieInput}
+							onChange={this.searchMovies}
 							placeholder="TYPE TITLE HERE"
 							autoFocus
 						/>
