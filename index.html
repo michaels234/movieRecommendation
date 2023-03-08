@@ -19,14 +19,33 @@
 			this.searchMovies = this.searchMovies.bind(this)
 			this.movieSelection = this.movieSelection.bind(this)
             this.loading = true
+			this.movies = []
 			this.options = []
 			this.movieInput = ''
 			this.recommendations = 'Enter a movie title\nand get 10 recommended similar movies'
+			this.api = 'https://5ebsomi6g8.execute-api.us-east-1.amazonaws.com/prd'
 		}
 
 		componentDidMount () {
+			this.getMovies()
             this.loading = false
 			this.forceUpdate()
+		}
+
+		async getMovies () {
+			//let response = await axios.get(`${this.api}/movies`) // get all titles containing movieInput query
+			//this.movies = JSON.parse(response.data.body)
+			this.movies = [
+				{
+					"ind": "3635",
+					"titleYear": "Light Sleeper (1992)"
+				},
+				{
+					"ind": "228",
+					"titleYear": "Oblivion (2013)"
+				}
+			]
+			console.log(this.movies)
 		}
 
 		async searchMovies (event) {
@@ -34,8 +53,10 @@
 			if (this.movieInput.trim()) { // remove trailing whitespaces, only do if not empty
 				// clean up and encode movieInput before API request
 				let movieInput = encodeURIComponent(`"${this.movieInput.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-\'\"_`~()]/g,'')}"`)
-				let response = await axios.get(`/movies?title=${movieInput}`) // get all titles containing movieInput query
-				this.options = response.data // set options to display
+				this.options = this.movies.filter(movie => {
+					let simpleTitle = movie.titleYear.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-\'\"_`~()]/g,'')
+					return simpleTitle.includes(movieInput)
+				}) // set options to display
 			} else { // if empty after removing trailing whitespaces
 				this.movieInput = '' // make sure the input value is set to be empty
 				this.options = [] // and options are empty
@@ -47,7 +68,7 @@
 			event.preventDefault();
             this.loading = true
 			this.forceUpdate()
-			let response = await axios.get(`/predict?ind=${ind}`)
+			let response = await axios.get(`${this.api}/predict?ind=${ind}`)
 			this.recommendations = response.data['prediction_text']
 			this.movieInput = ''
 			this.options = []
