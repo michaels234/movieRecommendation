@@ -1,0 +1,19 @@
+Lambda
+	When creating, set role to a role that allows dynamodb access
+	Configuration > Environment variables > set the same variables as .env
+		but ENV=PRD
+API Gateway
+	create /movies GET
+		Method Request
+			URL Query String Parameters
+				title, required
+		Integration Request
+			Lambda Function
+			Mapping Templates
+				application/json
+				{
+					"title": "$input.params('title')"
+				}
+		Don't forget to deploy
+DynamoDB
+	
