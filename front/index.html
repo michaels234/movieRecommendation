@@ -19,23 +19,43 @@
 			this.searchMovies = this.searchMovies.bind(this)
 			this.movieSelection = this.movieSelection.bind(this)
             this.loading = true
+			this.movies = []
 			this.options = []
 			this.movieInput = ''
 			this.recommendations = 'Enter a movie title\nand get 10 recommended similar movies'
+			this.api = 'https://5ebsomi6g8.execute-api.us-east-1.amazonaws.com/prd'
+			this.query = new URLSearchParams(window.location.search).get('admin');
 		}
 
 		componentDidMount () {
-            this.loading = false
+			this.getMovies()
+		}
+
+		async getMovies (remove=false) {
+			this.loading = true
+			this.forceUpdate()
+			if (localStorage.getItem('movies') !== null && !remove) {
+				console.log('Getting movies from cache')
+				this.movies = JSON.parse(localStorage.getItem('movies'));
+			} else {
+				console.log('Getting movies from api')
+				let response = await axios.get(`${this.api}/movies`) // get all titles containing movieInput query
+				this.movies = JSON.parse(response.data.body)
+				localStorage.setItem('movies', response.data.body)
+			}
+			this.loading = false
 			this.forceUpdate()
 		}
 
-		async searchMovies (event) {
+		searchMovies (event) {
 			this.movieInput = event.target.value // get the input value
 			if (this.movieInput.trim()) { // remove trailing whitespaces, only do if not empty
 				// clean up and encode movieInput before API request
-				let movieInput = encodeURIComponent(`"${this.movieInput.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-\'\"_`~()]/g,'')}"`)
-				let response = await axios.get(`/movies?title=${movieInput}`) // get all titles containing movieInput query
-				this.options = response.data // set options to display
+				let movieInput = `${this.movieInput.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-\'\"_`~()]/g,'')}`
+				this.options = this.movies.filter(movie => { // set options to display
+					let simpleTitle = movie.titleYear.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-\'\"_`~()]/g,'')
+					return simpleTitle.includes(movieInput)
+				})
 			} else { // if empty after removing trailing whitespaces
 				this.movieInput = '' // make sure the input value is set to be empty
 				this.options = [] // and options are empty
@@ -47,8 +67,8 @@
 			event.preventDefault();
             this.loading = true
 			this.forceUpdate()
-			let response = await axios.get(`/predict?ind=${ind}`)
-			this.recommendations = response.data['prediction_text']
+			let response = await axios.get(`${this.api}/predict?ind=${ind}`)
+			this.recommendations = JSON.parse(response.data.body)['prediction_text']
 			this.movieInput = ''
 			this.options = []
             this.loading = false
@@ -56,7 +76,22 @@
 		}
 
 		render () {
-			if (this.movieInput && this.options && this.options.length > 0 && !this.loading) {
+			if (this.loading) {
+				// loading screen
+                return (
+					<div className="loading1">
+						<div className="loading2">LOADING</div>
+					</div>
+				)
+			} else if (this.query) {
+				// get all movie data screen (just go to /?admin=1 . could be = anything, just needs to exist)
+				return (
+					<button onClick={() => this.getMovies(true)}>
+						Click to get all movie data
+					</button>
+				)
+			} else if (this.movieInput && this.options && this.options.length > 0) {
+				// movie options buttons display
 				return (
 					<div className="outer-div">
 						<input className="input" align="middle" id="inp"
@@ -71,7 +106,8 @@
 						</div>
 					</div>
 				)
-			} else if (!this.loading) {
+			} else {
+				// home screen / results screen
 				return (
 					<div className="outer-div">
 						<input className="input" align="middle" id="inp"
@@ -100,13 +136,7 @@
 						</div>
 					</div>
 				)
-			} else {
-                return (
-					<div className="loading1">
-						<div className="loading2">LOADING</div>
-					</div>
-				)
-            }
+			}
 		}
 	}
 	const root = ReactDOM.createRoot(document.getElementById('movie'));

@@ -19,11 +19,23 @@ def list_titles():
 	dynamodb = dynamo_connect()
 	table = dynamodb.Table('movies')
 
+	items = []
 	response = table.scan(
 		ProjectionExpression='ind, title, #yr',
 		ExpressionAttributeNames={'#yr': 'year'}
 	)
-	return [{'ind': item['ind'], 'titleYear': item['title'] + f" ({item['year']})"} for item in response['Items']]
+	items.extend(response['Items'])
+	while True:
+		if 'LastEvaluatedKey' not in response:
+			break
+		response = table.scan(
+			ProjectionExpression='ind, title, #yr',
+			ExpressionAttributeNames={'#yr': 'year'},
+			ExclusiveStartKey=response['LastEvaluatedKey']
+		)
+		items.extend(response['Items'])
+
+	return [{'ind': item['ind'], 'titleYear': item['title'] + f" ({item['year']})"} for item in items]
 
 
 def dynamo_connect():
