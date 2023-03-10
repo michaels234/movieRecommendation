@@ -34,24 +34,15 @@
 		async getMovies (remove=false) {
 			this.loading = true
 			this.forceUpdate()
-			//if (localStorage.getItem('movies') !== null && !remove) {
-			//	console.log('Getting movies from cache')
-			//	this.movies = JSON.parse(localStorage.getItem('movies'));
-			//} else {
-			//	console.log('Getting movies from api')
-			//	let response = await axios.get(`${this.api}/movies`) // get all titles containing movieInput query
-			//	this.movies = JSON.parse(response.data.body)
-			//	localStorage.setItem('movies', response.data.body)
-			//}
-			this.movies = [
-				{titleYear: 'together (2005)'},
-				{titleYear: 'weargthyjhgfd (2005)'},
-				{titleYear: 'hertz (2005)'},
-				{titleYear: 'her (2005)'},
-				{titleYear: 'heysf (2005)'},
-				{titleYear: 'hal (2005)'},
-				{titleYear: 'aetrhyjghjgf (2005)'},
-			]
+			if (localStorage.getItem('movies') !== null && !remove) {
+				console.log('Getting movies from cache')
+				this.movies = JSON.parse(localStorage.getItem('movies'));
+			} else {
+				console.log('Getting movies from api')
+				let response = await axios.get(`${this.api}/movies`) // get all titles containing movieInput query
+				this.movies = JSON.parse(response.data.body)
+				localStorage.setItem('movies', response.data.body)
+			}
 			this.loading = false
 			this.forceUpdate()
 		}
