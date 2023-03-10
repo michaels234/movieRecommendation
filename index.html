@@ -34,15 +34,24 @@
 		async getMovies (remove=false) {
 			this.loading = true
 			this.forceUpdate()
-			if (localStorage.getItem('movies') !== null && !remove) {
-				console.log('Getting movies from cache')
-				this.movies = JSON.parse(localStorage.getItem('movies'));
-			} else {
-				console.log('Getting movies from api')
-				let response = await axios.get(`${this.api}/movies`) // get all titles containing movieInput query
-				this.movies = JSON.parse(response.data.body)
-				localStorage.setItem('movies', response.data.body)
-			}
+			//if (localStorage.getItem('movies') !== null && !remove) {
+			//	console.log('Getting movies from cache')
+			//	this.movies = JSON.parse(localStorage.getItem('movies'));
+			//} else {
+			//	console.log('Getting movies from api')
+			//	let response = await axios.get(`${this.api}/movies`) // get all titles containing movieInput query
+			//	this.movies = JSON.parse(response.data.body)
+			//	localStorage.setItem('movies', response.data.body)
+			//}
+			this.movies = [
+				{titleYear: 'together (2005)'},
+				{titleYear: 'weargthyjhgfd (2005)'},
+				{titleYear: 'hertz (2005)'},
+				{titleYear: 'her (2005)'},
+				{titleYear: 'heysf (2005)'},
+				{titleYear: 'hal (2005)'},
+				{titleYear: 'aetrhyjghjgf (2005)'},
+			]
 			this.loading = false
 			this.forceUpdate()
 		}
@@ -51,16 +60,40 @@
 			this.movieInput = event.target.value // get the input value
 			if (this.movieInput.trim()) { // remove trailing whitespaces, only do if not empty
 				// clean up and encode movieInput before API request
-				let movieInput = `${this.movieInput.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-\'\"_`~()]/g,'')}`
-				this.options = this.movies.filter(movie => { // set options to display
-					let simpleTitle = movie.titleYear.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-\'\"_`~()]/g,'')
+				let movieInput = `${this.clean(this.movieInput)}`
+				let filtered = this.movies.filter(movie => { // set options to display
+					let simpleTitle = this.clean(movie.titleYear.slice(0, -7))
 					return simpleTitle.includes(movieInput)
+				})
+				this.options = filtered.sort((a, b) => {
+					let simpleTitleA = this.clean(a.titleYear.slice(0, -7))
+					let simpleTitleB = this.clean(b.titleYear.slice(0, -7))
+					if (simpleTitleA == movieInput && simpleTitleB == movieInput) {
+						return 0
+					} else if (simpleTitleA == movieInput) {
+						return -1
+					} else if (simpleTitleB == movieInput) {
+						return 1
+					}
+					let aIndex = simpleTitleA.indexOf(movieInput);
+					let bIndex = simpleTitleB.indexOf(movieInput);
+					if (aIndex < bIndex) {
+						return -1
+					} else if (aIndex > bIndex) {
+						return 1
+					} else {
+						return 0
+					}
 				})
 			} else { // if empty after removing trailing whitespaces
 				this.movieInput = '' // make sure the input value is set to be empty
 				this.options = [] // and options are empty
 			}
 			this.forceUpdate()
+		}
+
+		clean (movie) {
+			return movie.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-\'\"_`~()]/g,'')
 		}
 
 		async movieSelection (ind) {
@@ -84,7 +117,7 @@
 					</div>
 				)
 			} else if (this.query) {
-				// get all movie data screen (just go to /?admin=1 . could be = anything, just needs to exist)
+				// admin get all movie data button screen (just go to /?admin=1 . could be = anything, just needs to exist)
 				return (
 					<button onClick={() => this.getMovies(true)}>
 						Click to get all movie data
@@ -102,7 +135,7 @@
 							onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }}
 						/>
 						<div className="options">
-							{this.options.map((dict) => <button onClick={() => this.movieSelection(dict['ind'])} key={dict['ind']}>{dict['titleYear']}</button>)}
+							{this.options.map((dict) => <button onClick={() => this.movieSelection(dict['ind'])} key={`${dict['titleYear']}-${dict['ind']}`}>{dict['titleYear']}</button>)}
 						</div>
 					</div>
 				)
@@ -120,7 +153,7 @@
 						<div className="results">
 							{
 								this.recommendations.split('\n\n').map((value, index) =>
-									<div className="result" key={value + index}>
+									<div className="result" key={`${value}-${index}`}>
 										<div className = "line1">
 											{value.split('\n')[0]}
 										</div>
