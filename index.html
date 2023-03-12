@@ -4,7 +4,8 @@
 		<link rel="stylesheet" type="text/css" href="./style.css"/>
 	</head>
 	<body>
-		<div id="movie" class="movie"/>
+		<img src="./film movie recs.jpg" style="width: 100%"/>
+		<div id="movie" class="movie"></div>
 	</body>
 </html>
 <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
@@ -22,7 +23,7 @@
 			this.movies = []
 			this.options = []
 			this.movieInput = ''
-			this.recommendations = 'Enter a movie title\nand get 10 recommended similar movies'
+			this.recommendations = 'Enter a movie title and click it\nGet 10 recommended similar movies'
 			this.api = 'https://5ebsomi6g8.execute-api.us-east-1.amazonaws.com/prd'
 			this.query = new URLSearchParams(window.location.search).get('admin');
 		}
