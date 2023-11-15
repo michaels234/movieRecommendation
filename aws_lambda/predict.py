@@ -26,7 +26,8 @@ def list_to_output(movie_list):
 	
 def list_similar_movies_from_ind(ind):
 	dynamodb = dynamo_connect()
-	table = dynamodb.Table('movies')
+	table_name = 'movies'
+	table = dynamodb.Table(table_name)
 
 	response = table.get_item(
 		Key={'ind': str(ind)},
@@ -35,9 +36,9 @@ def list_similar_movies_from_ind(ind):
 	similarity_indices = tuple(response['Item']['similarity_indices'].split(', '))
 
 	items = []
-	for ind in similarity_indices:
+	for i in similarity_indices:
 		items.append(table.get_item(
-			Key={'ind': ind},
+			Key={'ind': i},
 			ProjectionExpression='ind, title, overview',
 		)['Item'])
 
@@ -48,18 +49,21 @@ def list_similar_movies_from_ind(ind):
 def dynamo_connect():
 	if 'ENV' not in os.environ or ('ENV' in os.environ and os.environ.get('ENV') == 'DEV'):
 		# Local Development Environment
-		from dotenv import load_dotenv
-		load_dotenv()
-
-		session = boto3.Session(
-			region_name='us-east-1',
-			aws_access_key_id=os.environ.get('DYNAMODB_ACCESS_KEY'),
-			aws_secret_access_key=os.environ.get('DYNAMODB_SECRET_ACCESS_KEY'),
-		)
+		endpoint_url = 'http://localhost:8000'
+		aws_access_key_id = 'dummy'
+		aws_secret_access_key = 'dummy'
 	else:
 		# AWS Production Environment
-		session = boto3.Session(
-			region_name='us-east-1',
-		)
+		endpoint_url = None
+		aws_access_key_id = None
+		aws_secret_access_key = None
 
-	return session.resource('dynamodb')
+	dynamodb_resource = boto3.resource(
+		'dynamodb',
+		region_name='us-east-1',
+		endpoint_url=endpoint_url,
+		aws_access_key_id=aws_access_key_id,
+		aws_secret_access_key=aws_secret_access_key,
+	)
+
+	return dynamodb_resource
